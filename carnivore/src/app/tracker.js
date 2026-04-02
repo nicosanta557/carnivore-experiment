@@ -395,12 +395,11 @@ export default function CarnivoreTracker() {
 
       {/* CONTENT */}
       <div style={{ maxWidth: '860px', margin: '0 auto', padding: '20px 24px 60px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
           {[
             ['AVG CALORIES', avgCal ? `${avgCal.toLocaleString()} kcal` : '—'],
             ['AVG PROTEIN', avgPro ? `${avgPro}g` : '—'],
             ['AVG CAL:PRO', avgCal && avgPro ? `${(avgCal / avgPro).toFixed(1)}` : '—'],
-            ['PROGRESS', `${data.entries.length}/${TOTAL_DAYS}`],
           ].map(([label, val]) => (
             <div key={label} style={card}>
               <div style={{ fontSize: '10px', letterSpacing: '2px', color: '#aaa', marginBottom: '4px' }}>{label}</div>
