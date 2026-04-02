@@ -9,7 +9,7 @@ async function getEntries() {
     const { blobs } = await list()
     const blob = blobs.find(b => b.pathname === BLOB_KEY)
     if (!blob) return { startWeight: 251.4, entries: [] }
-    const res = await fetch(blob.url, { cache: 'no-store' })
+    const res = await fetch(blob.downloadUrl, { cache: 'no-store' })
     return await res.json()
   } catch (e) {
     console.error('getEntries error:', e)
@@ -43,20 +43,20 @@ export async function POST(request) {
       }
 
       const newData = { ...current, entries }
-      await put(BLOB_KEY, JSON.stringify(newData), { access: 'public', addRandomSuffix: false })
+      await put(BLOB_KEY, JSON.stringify(newData), { access: 'private', addRandomSuffix: false })
       return NextResponse.json({ success: true })
     }
 
     if (body.action === 'deleteEntry') {
       const entries = current.entries.filter(e => e.date !== body.date)
       const newData = { ...current, entries }
-      await put(BLOB_KEY, JSON.stringify(newData), { access: 'public', addRandomSuffix: false })
+      await put(BLOB_KEY, JSON.stringify(newData), { access: 'private', addRandomSuffix: false })
       return NextResponse.json({ success: true })
     }
 
     if (body.action === 'setStartWeight') {
       const newData = { ...current, startWeight: body.weight }
-      await put(BLOB_KEY, JSON.stringify(newData), { access: 'public', addRandomSuffix: false })
+      await put(BLOB_KEY, JSON.stringify(newData), { access: 'private', addRandomSuffix: false })
       return NextResponse.json({ success: true })
     }
 
