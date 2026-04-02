@@ -1,62 +1,66 @@
-import { put, head } from '@vercel/blob'
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
-const BLOB_KEY = 'carnivore-entries.json'
 const ADMIN_PASSWORD = 'carnivore30'
+const START_WEIGHT = 251.4
 
-async function getEntries() {
-  try {
-    const blobInfo = await head(BLOB_KEY)
-    const res = await fetch(blobInfo.downloadUrl, { cache: 'no-store' })
-    return await res.json()
-  } catch (e) {
-    return { startWeight: 251.4, entries: [] }
-  }
-}
-
-async function saveData(data) {
-  await put(BLOB_KEY, JSON.stringify(data), { 
-    access: 'private', 
-    addRandomSuffix: false,
-    allowOverwrite: true
-  })
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
 }
 
 export async function GET() {
-  const data = await getEntries()
-  return NextResponse.json(data)
+  try {
+    const supabase = getSupabase()
+    const { data, error } = await supabase
+      .from('entries')
+      .select('*')
+      .order('date', { ascending: true })
+
+    if (error) throw error
+    return NextResponse.json({ startWeight: START_WEIGHT, entries: data || [] })
+  } catch (e) {
+    console.error('GET error:', e)
+    return NextResponse.json({ startWeight: START_WEIGHT, entries: [] })
+  }
 }
 
 export async function POST(request) {
   try {
     const body = await request.json()
-
     if (body.password !== ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const current = await getEntries()
+    const supabase = getSupabase()
 
     if (body.action === 'saveEntry') {
-      const entry = body.entry
-      const entries = current.entries.filter(e => e.date !== entry.date)
-      entries.push(entry)
-      entries.sort((a, b) => a.date.localeCompare(b.date))
-      if (entry.weight && current.entries.length === 0) {
-        current.startWeight = entry.weight
-      }
-      await saveData({ ...current, entries })
+      const { error } = await supabase
+        .from('entries')
+        .upsert({
+          date: body.entry.date,
+          day: body.entry.day,
+          weight: body.entry.weight,
+          calories: body.entry.calories,
+          protein: body.entry.protein,
+          fat: body.entry.fat,
+          carbs: body.entry.carbs,
+          note: body.entry.note,
+        }, { onConflict: 'date' })
+
+      if (error) throw error
       return NextResponse.json({ success: true })
     }
 
     if (body.action === 'deleteEntry') {
-      const entries = current.entries.filter(e => e.date !== body.date)
-      await saveData({ ...current, entries })
-      return NextResponse.json({ success: true })
-    }
+      const { error } = await supabase
+        .from('entries')
+        .delete()
+        .eq('date', body.date)
 
-    if (body.action === 'setStartWeight') {
-      await saveData({ ...current, startWeight: body.weight })
+      if (error) throw error
       return NextResponse.json({ success: true })
     }
 
