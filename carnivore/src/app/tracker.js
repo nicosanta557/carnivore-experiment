@@ -324,6 +324,7 @@ export default function CarnivoreTracker() {
   const currentDay = Math.min(Math.max(today, 1), TOTAL_DAYS)
   const avgCal = avg(sorted, 'calories')
   const avgPro = avg(sorted, 'protein')
+  const avgCarbs = avg(sorted, 'carbs')
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
@@ -374,11 +375,11 @@ export default function CarnivoreTracker() {
           <h1 onClick={tapTitle} style={{ margin: '0 0 6px', fontSize: 'clamp(26px, 5vw, 42px)', fontWeight: '300', letterSpacing: '-0.5px', lineHeight: 1.1, cursor: 'default', userSelect: 'none' }}>
             30 Day Carnivore Experiment
           </h1>
-          <div style={{ fontSize: '12px', color: '#555', letterSpacing: '2px', marginBottom: '28px' }}>PROTOCOL: WATER · COFFEE · MEAT · NOTHING ELSE</div>
+          <div style={{ fontSize: '12px', color: '#555', letterSpacing: '2px', marginBottom: '28px' }}>PROTOCOL: WATER · COFFEE · MEAT · EGGS</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '24px' }}>
             {[
               ['STATUS', <span style={{ color: '#4aaa6a' }}>● ACTIVE</span>],
-              ['DAY', `${currentDay} / ${TOTAL_DAYS}`],
+              ['COMPLETE', `${Math.round((currentDay / TOTAL_DAYS) * 100)}%`],
               ['LOGGED', `${data.entries.length} days`],
               ['START WT', data.startWeight ? `${data.startWeight} lbs` : '—'],
               ['CURRENT WT', currentWeight ? `${currentWeight} lbs` : '—'],
@@ -395,15 +396,16 @@ export default function CarnivoreTracker() {
 
       {/* CONTENT */}
       <div style={{ maxWidth: '860px', margin: '0 auto', padding: '20px 24px 60px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '8px' }}>
           {[
             ['AVG CALORIES', avgCal ? `${avgCal.toLocaleString()} kcal` : '—'],
             ['AVG PROTEIN', avgPro ? `${avgPro}g` : '—'],
             ['AVG CAL:PRO', avgCal && avgPro ? `${(avgCal / avgPro).toFixed(1)}` : '—'],
+            ['AVG CARBS', avgCarbs != null ? `${avgCarbs}g` : '—'],
           ].map(([label, val]) => (
             <div key={label} style={card}>
               <div style={{ fontSize: '10px', letterSpacing: '2px', color: '#aaa', marginBottom: '4px' }}>{label}</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a', fontFamily: 'monospace' }}>{val}</div>
+              <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a', fontFamily: 'monospace' }}>{val}</div>
             </div>
           ))}
         </div>
